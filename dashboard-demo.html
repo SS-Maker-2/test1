@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LicitaPanel — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0c0e14;
+  --bg2:     #111420;
+  --bg3:     #171b28;
+  --bg4:     #1e2335;
+  --border:  #232840;
+  --border2: #2d3450;
+  --accent:  #4f8ef7;
+  --accent2: #3a7af0;
+  --green:   #34d98b;
+  --orange:  #f5a623;
+  --red:     #ff5c6c;
+  --purple:  #a78bfa;
+  --text:    #e4e8f5;
+  --text2:   #7e8aaa;
+  --text3:   #3d4560;
+  --mono:    'JetBrains Mono', monospace;
+  --sans:    'Outfit', sans-serif;
+  --radius:  12px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  gap: 0.25rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand-icon {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.brand-plan {
+  font-size: 0.65rem;
+  color: var(--text2);
+  margin-top: 1px;
+}
+
+.nav-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 0.75rem 0.75rem 0.4rem;
+  font-family: var(--mono);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+
+.nav-item.active {
+  background: rgba(79,142,247,0.12);
+  color: var(--accent);
+}
+
+.nav-icon { font-size: 0.9rem; width: 18px; text-align: center; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-family: var(--mono);
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-name { font-size: 0.8rem; font-weight: 500; }
+.user-role { font-size: 0.65rem; color: var(--text2); }
+
+/* ── MAIN ── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(12,14,20,0.8);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.page-title { font-size: 1.1rem; font-weight: 600; }
+.page-sub { font-size: 0.75rem; color: var(--text2); margin-top: 1px; }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.period-select {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.btn-add {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.notif-btn {
+  position: relative;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.notif-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  background: var(--red);
+  border-radius: 50%;
+  border: 2px solid var(--bg2);
+}
+
+/* ── CONTENT ── */
+.content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── METRIC CARDS ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.metric-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.metric-card.blue::before  { background: var(--accent); }
+.metric-card.green::before { background: var(--green); }
+.metric-card.orange::before{ background: var(--orange); }
+.metric-card.purple::before{ background: var(--purple); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.metric-card:nth-child(1) { animation-delay: 0.05s; }
+.metric-card:nth-child(2) { animation-delay: 0.1s; }
+.metric-card:nth-child(3) { animation-delay: 0.15s; }
+.metric-card:nth-child(4) { animation-delay: 0.2s; }
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--text2);
+  font-weight: 400;
+}
+
+.metric-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+}
+
+.metric-icon.blue   { background: rgba(79,142,247,0.12); }
+.metric-icon.green  { background: rgba(52,217,139,0.12); }
+.metric-icon.orange { background: rgba(245,166,35,0.12); }
+.metric-icon.purple { background: rgba(167,139,250,0.12); }
+
+.metric-value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.metric-value.blue   { color: var(--accent); }
+.metric-value.green  { color: var(--green); }
+.metric-value.orange { color: var(--orange); }
+.metric-value.purple { color: var(--purple); }
+
+.metric-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.metric-change {
+  font-size: 0.72rem;
+  font-family: var(--mono);
+  font-weight: 500;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.metric-change.up   { background: rgba(52,217,139,0.12); color: var(--green); }
+.metric-change.down { background: rgba(255,92,108,0.12); color: var(--red); }
+
+.metric-compare { font-size: 0.72rem; color: var(--text3); }
+
+/* ── MIDDLE ROW ── */
+.middle-row {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1rem;
+}
+
+/* ── CHART CARD ── */
+.chart-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  animation: fadeUp 0.4s ease 0.25s both;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.card-title { font-size: 0.9rem; font-weight: 600; }
+.card-sub   { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
+
+.chart-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg3);
+  border-radius: 7px;
+  padding: 3px;
+}
+
+.chart-tab {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text2);
+  transition: all 0.15s;
+  border: none;
+  background: transparent;
+  font-family: var(--sans);
+}
+
+.chart-tab.active { background: var(--bg4); color: var(--text); }
+
+/* SVG Chart */
+.chart-wrap { width: 100%; height: 200px; position: relative; }
+
+.chart-svg { width: 100%; height: 100%; }
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-line2 {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 5 3;
+  opacity: 0.6;
+}
+
+.chart-area {
+  fill: url(#areaGrad);
+  opacity: 0.3;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.chart-label {
+  font-size: 0.65rem;
+  color: var(--text3);
+  font-family: var(--mono);
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text2);
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* ── DONUT CARD ── */
+.donut-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  animation: fadeUp 0.4s ease 0.3s both;
+}
+
+.donut-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+  position: relative;
+}
+
+.donut-center {
+  position: absolute;
+  text-align: center;
+}
+
+.donut-pct {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--green);
+  line-height: 1;
+}
+
+.donut-label { font-size: 0.65rem; color: var(--text2); margin-top: 2px; }
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.donut-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.donut-color {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.donut-name { font-size: 0.78rem; color: var(--text2); flex: 1; }
+.donut-val  { font-family: var(--mono); font-size: 0.75rem; color: var(--text); font-weight: 500; }
+
+/* ── BOTTOM ROW ── */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+}
+
+/* ── TABLE CARD ── */
+.table-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: fadeUp 0.4s ease 0.35s both;
+}
+
+.table-card .card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  padding: 0.75rem 1.5rem;
+  text-align: left;
+  font-size: 0.68rem;
+  color: var(--text3);
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+tbody tr:last-child { border: none; }
+tbody tr:hover { background: var(--bg3); }
+
+tbody td {
+  padding: 0.9rem 1.5rem;
+  font-size: 0.8rem;
+}
+
+.td-nombre { max-width: 240px; }
+.td-nombre-main { font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-nombre-org  { font-size: 0.7rem; color: var(--text2); margin-top: 1px; }
+
+.td-monto {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--green);
+}
+
+.td-cierre { font-size: 0.75rem; color: var(--text2); font-family: var(--mono); }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.status-badge.postulado  { background: rgba(79,142,247,0.12); color: var(--accent); }
+.status-badge.adjudicado { background: rgba(52,217,139,0.12); color: var(--green); }
+.status-badge.pendiente  { background: rgba(245,166,35,0.12);  color: var(--orange); }
+.status-badge.perdido    { background: rgba(255,92,108,0.12);  color: var(--red); }
+.status-badge.nueva      { background: rgba(167,139,250,0.12); color: var(--purple); }
+
+/* ── NEXT CLOSINGS ── */
+.closings-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: fadeUp 0.4s ease 0.4s both;
+}
+
+.closings-card .card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin: 0;
+}
+
+.closing-item {
+  padding: 0.9rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background 0.15s;
+}
+
+.closing-item:last-child { border: none; }
+.closing-item:hover { background: var(--bg3); }
+
+.closing-days {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.closing-days.urgente { background: rgba(255,92,108,0.12); color: var(--red); }
+.closing-days.pronto  { background: rgba(245,166,35,0.12);  color: var(--orange); }
+.closing-days.normal  { background: rgba(79,142,247,0.12);  color: var(--accent); }
+
+.closing-info { flex: 1; min-width: 0; }
+.closing-name { font-size: 0.78rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.closing-org  { font-size: 0.68rem; color: var(--text2); margin-top: 1px; }
+.closing-monto{ font-family: var(--mono); font-size: 0.7rem; color: var(--green); margin-top: 2px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">LP</div>
+    <div>
+      <div class="brand-name">LicitaPanel</div>
+      <div class="brand-plan">Plan Personal</div>
+    </div>
+  </div>
+
+  <div class="nav-label">Principal</div>
+  <a class="nav-item active"><span class="nav-icon">⊞</span> Dashboard</a>
+  <a class="nav-item"><span class="nav-icon">◎</span> Todas las licitaciones <span class="nav-badge">47</span></a>
+  <a class="nav-item"><span class="nav-icon">★</span> Mis filtros <span class="nav-badge">12</span></a>
+
+  <div class="nav-label">Gestión</div>
+  <a class="nav-item"><span class="nav-icon">📄</span> Presupuestos</a>
+  <a class="nav-item"><span class="nav-icon">📅</span> Calendario</a>
+  <a class="nav-item"><span class="nav-icon">📦</span> Postulaciones</a>
+
+  <div class="nav-label">Inteligencia</div>
+  <a class="nav-item"><span class="nav-icon">📊</span> Competidores</a>
+  <a class="nav-item"><span class="nav-icon">🤖</span> Analizar bases</a>
+
+  <div class="nav-label">Sistema</div>
+  <a class="nav-item"><span class="nav-icon">⚙</span> Configuración</a>
+
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">Y</div>
+      <div>
+        <div class="user-name">Young</div>
+        <div class="user-role">Señalética & Rotulación</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Seguimiento de tu actividad en Mercado Público</div>
+    </div>
+    <div class="topbar-right">
+      <select class="period-select">
+        <option>Este mes</option>
+        <option>Último trimestre</option>
+        <option>Este año</option>
+      </select>
+      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+      <button class="btn-add">+ Agregar filtro</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- MÉTRICAS -->
+    <div class="metrics-row">
+      <div class="metric-card blue">
+        <div class="metric-header">
+          <div class="metric-label">Licitaciones detectadas</div>
+          <div class="metric-icon blue">◎</div>
+        </div>
+        <div class="metric-value blue">147</div>
+        <div class="metric-footer">
+          <span class="metric-change up">+23%</span>
+          <span class="metric-compare">vs mes anterior</span>
+        </div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-header">
+          <div class="metric-label">Monto total en juego</div>
+          <div class="metric-icon green">$</div>
+        </div>
+        <div class="metric-value green">$48M</div>
+        <div class="metric-footer">
+          <span class="metric-change up">+$12M</span>
+          <span class="metric-compare">vs mes anterior</span>
+        </div>
+      </div>
+      <div class="metric-card orange">
+        <div class="metric-header">
+          <div class="metric-label">Postulaciones enviadas</div>
+          <div class="metric-icon orange">✉</div>
+        </div>
+        <div class="metric-value orange">31</div>
+        <div class="metric-footer">
+          <span class="metric-change up">+8</span>
+          <span class="metric-compare">vs mes anterior</span>
+        </div>
+      </div>
+      <div class="metric-card purple">
+        <div class="metric-header">
+          <div class="metric-label">Tasa de adjudicación</div>
+          <div class="metric-icon purple">%</div>
+        </div>
+        <div class="metric-value purple">34%</div>
+        <div class="metric-footer">
+          <span class="metric-change up">+6%</span>
+          <span class="metric-compare">vs mes anterior</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRÁFICO + DONUT -->
+    <div class="middle-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Licitaciones por mes</div>
+            <div class="card-sub">Detectadas vs postuladas</div>
+          </div>
+          <div class="chart-tabs">
+            <button class="chart-tab active">6M</button>
+            <button class="chart-tab">1A</button>
+            <button class="chart-tab">Todo</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg class="chart-svg" viewBox="0 0 700 200" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4f8ef7" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="50"  x2="700" y2="50"  stroke="#232840" stroke-width="1"/>
+            <line x1="0" y1="100" x2="700" y2="100" stroke="#232840" stroke-width="1"/>
+            <line x1="0" y1="150" x2="700" y2="150" stroke="#232840" stroke-width="1"/>
+            <!-- Area fill -->
+            <path class="chart-area" d="M0,140 C80,120 140,60 200,80 C260,100 300,40 380,50 C440,58 500,90 560,70 C610,54 650,40 700,30 L700,200 L0,200 Z"/>
+            <!-- Main line -->
+            <path class="chart-line" d="M0,140 C80,120 140,60 200,80 C260,100 300,40 380,50 C440,58 500,90 560,70 C610,54 650,40 700,30"/>
+            <!-- Secondary line -->
+            <path class="chart-line2" d="M0,165 C80,158 140,130 200,140 C260,150 300,110 380,120 C440,128 500,145 560,130 C610,118 650,100 700,95"/>
+            <!-- Dots -->
+            <circle cx="200" cy="80"  r="4" fill="#4f8ef7" stroke="#0c0e14" stroke-width="2"/>
+            <circle cx="380" cy="50"  r="4" fill="#4f8ef7" stroke="#0c0e14" stroke-width="2"/>
+            <circle cx="560" cy="70"  r="4" fill="#4f8ef7" stroke="#0c0e14" stroke-width="2"/>
+            <circle cx="700" cy="30"  r="4" fill="#4f8ef7" stroke="#0c0e14" stroke-width="2"/>
+            <!-- Y labels -->
+            <text x="8" y="48"  fill="#3d4560" font-size="11" font-family="JetBrains Mono">40</text>
+            <text x="8" y="98"  fill="#3d4560" font-size="11" font-family="JetBrains Mono">25</text>
+            <text x="8" y="148" fill="#3d4560" font-size="11" font-family="JetBrains Mono">10</text>
+          </svg>
+        </div>
+        <div class="chart-labels">
+          <span class="chart-label">Oct</span>
+          <span class="chart-label">Nov</span>
+          <span class="chart-label">Dic</span>
+          <span class="chart-label">Ene</span>
+          <span class="chart-label">Feb</span>
+          <span class="chart-label">Mar</span>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Detectadas</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:0.6"></div> Postuladas</div>
+        </div>
+      </div>
+
+      <div class="donut-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Rendimiento</div>
+            <div class="card-sub">Estado de postulaciones</div>
+          </div>
+        </div>
+        <div class="donut-wrap">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#232840" stroke-width="16"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#34d98b" stroke-width="16"
+              stroke-dasharray="110 217" stroke-dashoffset="-54" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#4f8ef7" stroke-width="16"
+              stroke-dasharray="62 217" stroke-dashoffset="-164" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="52" fill="none" stroke="#ff5c6c" stroke-width="16"
+              stroke-dasharray="45 217" stroke-dashoffset="-226" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">34%</div>
+            <div class="donut-label">adjudicado</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="donut-row">
+            <div class="donut-color" style="background:var(--green)"></div>
+            <div class="donut-name">Adjudicadas</div>
+            <div class="donut-val">11</div>
+          </div>
+          <div class="donut-row">
+            <div class="donut-color" style="background:var(--accent)"></div>
+            <div class="donut-name">En evaluación</div>
+            <div class="donut-val">8</div>
+          </div>
+          <div class="donut-row">
+            <div class="donut-color" style="background:var(--orange)"></div>
+            <div class="donut-name">Pendientes</div>
+            <div class="donut-val">6</div>
+          </div>
+          <div class="donut-row">
+            <div class="donut-color" style="background:var(--red)"></div>
+            <div class="donut-name">No adjudicadas</div>
+            <div class="donut-val">6</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA + CIERRES -->
+    <div class="bottom-row">
+      <div class="table-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Últimas licitaciones relevantes</div>
+            <div class="card-sub">Señalética y afines — últimos 7 días</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Licitación</th>
+              <th>Monto</th>
+              <th>Cierre</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-nombre">
+                <div class="td-nombre-main">Señalética informativa Hospital Regional</div>
+                <div class="td-nombre-org">Servicio de Salud Metropolitano</div>
+              </td>
+              <td class="td-monto">$4.200.000</td>
+              <td class="td-cierre">25 Mar</td>
+              <td><span class="status-badge postulado">● Postulado</span></td>
+            </tr>
+            <tr>
+              <td class="td-nombre">
+                <div class="td-nombre-main">Letreros y rótulos Campus Universidad</div>
+                <div class="td-nombre-org">Universidad de Chile</div>
+              </td>
+              <td class="td-monto">$8.750.000</td>
+              <td class="td-cierre">28 Mar</td>
+              <td><span class="status-badge nueva">● Nueva</span></td>
+            </tr>
+            <tr>
+              <td class="td-nombre">
+                <div class="td-nombre-main">Vinilos adhesivos dependencias municipales</div>
+                <div class="td-nombre-org">Municipalidad de Santiago</div>
+              </td>
+              <td class="td-monto">$1.890.000</td>
+              <td class="td-cierre">22 Mar</td>
+              <td><span class="status-badge adjudicado">● Adjudicado</span></td>
+            </tr>
+            <tr>
+              <td class="td-nombre">
+                <div class="td-nombre-main">Tótems direccionales edificio público</div>
+                <div class="td-nombre-org">Ministerio de Obras Públicas</div>
+              </td>
+              <td class="td-monto">$12.400.000</td>
+              <td class="td-cierre">15 Mar</td>
+              <td><span class="status-badge pendiente">● Evaluación</span></td>
+            </tr>
+            <tr>
+              <td class="td-nombre">
+                <div class="td-nombre-main">Demarcación vial y señalización peatonal</div>
+                <div class="td-nombre-org">SERVIU Región Metropolitana</div>
+              </td>
+              <td class="td-monto">$23.600.000</td>
+              <td class="td-cierre">10 Mar</td>
+              <td><span class="status-badge perdido">● No adjudicado</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="closings-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Próximos cierres</div>
+            <div class="card-sub">Licitaciones con fecha límite</div>
+          </div>
+        </div>
+
+        <div class="closing-item">
+          <div class="closing-days urgente">1d</div>
+          <div class="closing-info">
+            <div class="closing-name">Señalética vial Ruta 68</div>
+            <div class="closing-org">MOP Región Valparaíso</div>
+            <div class="closing-monto">$6.300.000</div>
+          </div>
+        </div>
+        <div class="closing-item">
+          <div class="closing-days urgente">2d</div>
+          <div class="closing-info">
+            <div class="closing-name">Rótulos identificación oficinas</div>
+            <div class="closing-org">SII Stgo Centro</div>
+            <div class="closing-monto">$980.000</div>
+          </div>
+        </div>
+        <div class="closing-item">
+          <div class="closing-days pronto">4d</div>
+          <div class="closing-info">
+            <div class="closing-name">Letreros luminosos aeropuerto</div>
+            <div class="closing-org">DGAC Chile</div>
+            <div class="closing-monto">$18.500.000</div>
+          </div>
+        </div>
+        <div class="closing-item">
+          <div class="closing-days pronto">6d</div>
+          <div class="closing-info">
+            <div class="closing-name">Banner y pendones evento regional</div>
+            <div class="closing-org">Intendencia Bio Bío</div>
+            <div class="closing-monto">$2.100.000</div>
+          </div>
+        </div>
+        <div class="closing-item">
+          <div class="closing-days normal">12d</div>
+          <div class="closing-info">
+            <div class="closing-name">Señalética hospital pediátrico</div>
+            <div class="closing-org">Servicio de Salud Sur</div>
+            <div class="closing-monto">$5.700.000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
