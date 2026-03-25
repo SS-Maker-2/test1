@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Licitando — Sistema de Monitoreo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;700&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080a10;--bg2:#0e1018;--bg3:#141720;--bg4:#1b1f2e;--bg5:#222738;
+  --border:#1e2336;--border2:#283048;
+  --blue:#3b82f6;--blue2:#2563eb;--cyan:#06b6d4;--green:#10b981;
+  --orange:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--pink:#ec4899;
+  --text:#e2e8f8;--text2:#6b7899;--text3:#363d55;
+  --mono:'IBM Plex Mono',monospace;--display:'Syne',sans-serif;--body:'Epilogue',sans-serif;
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--body);display:flex;min-height:100vh;overflow-x:hidden}
+
+/* SIDEBAR */
+.sidebar{width:235px;min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0.75rem;gap:0.1rem;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:0.65rem;padding:0.5rem 0.75rem;margin-bottom:1rem}
+.brand-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:0.75rem;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-0.03em}
+.brand-name{font-family:var(--display);font-size:1.05rem;font-weight:800;letter-spacing:-0.02em}
+.brand-name span{color:var(--cyan)}
+.brand-status{font-size:0.58rem;color:var(--green);font-family:var(--mono);display:flex;align-items:center;gap:0.3rem}
+.status-pulse{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-section{font-family:var(--mono);font-size:0.52rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);padding:0.9rem 0.75rem 0.3rem}
+.nav-item{display:flex;align-items:center;gap:0.6rem;padding:0.52rem 0.75rem;border-radius:8px;font-size:0.8rem;color:var(--text2);cursor:pointer;transition:all 0.15s;border:none;background:transparent;width:100%;text-align:left}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(59,130,246,0.1);color:var(--blue)}
+.nav-item .ni{width:15px;text-align:center;font-size:0.8rem;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:0.55rem;font-family:var(--mono);padding:0.1rem 0.4rem;border-radius:8px;font-weight:700}
+.nav-badge.blue{background:var(--blue);color:#fff}
+.nav-badge.orange{background:var(--orange);color:#000}
+.nav-badge.red{background:var(--red);color:#fff}
+.nav-badge.green{background:var(--green);color:#000}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding-top:0.75rem;padding-bottom:0.25rem}
+.user-card{display:flex;align-items:center;gap:0.6rem;padding:0.5rem 0.75rem;border-radius:8px;cursor:pointer}
+.user-card:hover{background:var(--bg3)}
+.user-av{width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:0.78rem;font-weight:600}
+.user-role{font-size:0.6rem;color:var(--text2)}
+
+/* MAIN */
+.main{margin-left:235px;flex:1;display:flex;flex-direction:column}
+.topbar{border-bottom:1px solid var(--border);padding:0.85rem 1.75rem;display:flex;align-items:center;justify-content:space-between;background:rgba(8,10,16,0.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50}
+.page-title{font-family:var(--display);font-size:1rem;font-weight:700}
+.page-sub{font-size:0.7rem;color:var(--text2);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:0.65rem}
+.tb-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:0.38rem 0.85rem;color:var(--text2);font-family:var(--body);font-size:0.76rem;cursor:pointer;transition:all 0.15s}
+.tb-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tb-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.tb-btn.primary:hover{background:var(--blue2)}
+.tb-btn.danger{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red)}
+.notif-btn{position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:7px;width:33px;height:33px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.82rem}
+.notif-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;background:var(--red);border-radius:50%;border:2px solid var(--bg2)}
+.period-tabs{display:flex;gap:0.15rem;background:var(--bg3);border-radius:7px;padding:3px}
+.ptab{font-size:0.68rem;padding:0.25rem 0.65rem;border-radius:5px;cursor:pointer;color:var(--text2);border:none;background:transparent;font-family:var(--body)}
+.ptab.active{background:var(--bg4);color:var(--text)}
+
+/* CONTENT */
+.content{padding:1.35rem 1.75rem;display:flex;flex-direction:column;gap:1.1rem;overflow-y:auto}
+.section{display:none;flex-direction:column;gap:1.1rem}
+.section.active{display:flex}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{padding:1rem 1.3rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
+.card-title{font-family:var(--display);font-size:0.86rem;font-weight:600}
+.card-sub{font-size:0.68rem;color:var(--text2);margin-top:1px}
+.card-body{padding:1.3rem}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem}
+.metrics-grid2{display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;position:relative;overflow:hidden;animation:fadeUp 0.4s ease both}
+.metric::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric.blue::after{background:var(--blue)}
+.metric.green::after{background:var(--green)}
+.metric.orange::after{background:var(--orange)}
+.metric.purple::after{background:var(--purple)}
+.metric.cyan::after{background:var(--cyan)}
+.metric.red::after{background:var(--red)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.metric:nth-child(1){animation-delay:.04s}
+.metric:nth-child(2){animation-delay:.08s}
+.metric:nth-child(3){animation-delay:.12s}
+.metric:nth-child(4){animation-delay:.16s}
+.m-label{font-size:0.66rem;color:var(--text2);margin-bottom:0.4rem}
+.m-val{font-family:var(--display);font-size:1.65rem;font-weight:700;line-height:1;margin-bottom:0.35rem}
+.m-val.blue{color:var(--blue)}
+.m-val.green{color:var(--green)}
+.m-val.orange{color:var(--orange)}
+.m-val.purple{color:var(--purple)}
+.m-val.cyan{color:var(--cyan)}
+.m-val.red{color:var(--red)}
+.m-change{font-family:var(--mono);font-size:0.62rem;padding:0.12rem 0.38rem;border-radius:4px;display:inline-block}
+.m-change.up{background:rgba(16,185,129,0.1);color:var(--green)}
+.m-change.down{background:rgba(239,68,68,0.1);color:var(--red)}
+.m-compare{font-size:0.62rem;color:var(--text3);margin-left:0.35rem}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:1fr 290px;gap:0.75rem}
+.chart-svg{width:100%;height:170px}
+.chart-labels{display:flex;justify-content:space-between;margin-top:0.5rem}
+.chart-lbl{font-size:0.6rem;color:var(--text3);font-family:var(--mono)}
+.legend{display:flex;gap:1rem;margin-top:0.65rem}
+.leg-item{display:flex;align-items:center;gap:0.35rem;font-size:0.68rem;color:var(--text2)}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+.donut-wrap{display:flex;align-items:center;justify-content:center;position:relative;padding:0.5rem 0}
+.donut-center{position:absolute;text-align:center}
+.donut-pct{font-family:var(--display);font-size:1.4rem;font-weight:700;color:var(--green);line-height:1}
+.donut-lbl{font-size:0.58rem;color:var(--text2)}
+.donut-legend{display:flex;flex-direction:column;gap:0.45rem;padding:0 1.3rem 1.3rem}
+.dl-row{display:flex;align-items:center;gap:0.5rem}
+.dl-color{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.dl-name{font-size:0.72rem;color:var(--text2);flex:1}
+.dl-val{font-family:var(--mono);font-size:0.7rem;font-weight:500}
+
+/* LICITACIONES */
+.lic-filters{display:flex;align-items:center;gap:0.5rem;padding:0.85rem 1.3rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.search-wrap{flex:1;min-width:160px;position:relative}
+.search-wrap input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:0.4rem 0.7rem 0.4rem 1.9rem;color:var(--text);font-family:var(--body);font-size:0.78rem;outline:none;transition:border 0.15s}
+.search-wrap input:focus{border-color:var(--blue)}
+.search-wrap input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:0.78rem}
+.pill{font-size:0.7rem;padding:0.28rem 0.75rem;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:var(--body)}
+.pill:hover,.pill.active{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,0.08)}
+.lic-list{display:flex;flex-direction:column}
+.lic-item{padding:0.9rem 1.3rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto;gap:0.75rem;align-items:start;transition:background 0.15s;cursor:pointer}
+.lic-item:last-child{border:none}
+.lic-item:hover{background:var(--bg3)}
+
+/* PRIORIDAD */
+.prio{width:4px;border-radius:4px;align-self:stretch;flex-shrink:0;min-height:60px}
+.prio.alta{background:var(--red)}
+.prio.media{background:var(--orange)}
+.prio.baja{background:var(--blue)}
+
+.lic-codigo{font-family:var(--mono);font-size:0.58rem;color:var(--text3);margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem}
+.lic-nombre{font-size:0.83rem;font-weight:500;margin-bottom:0.25rem;line-height:1.4}
+.lic-org{font-size:0.7rem;color:var(--text2);margin-bottom:0.35rem}
+.lic-tags{display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.35rem}
+.tag{font-size:0.58rem;padding:0.12rem 0.45rem;border-radius:10px;font-family:var(--mono)}
+.tag.lp{background:rgba(239,68,68,0.1);color:var(--red)}
+.tag.agil{background:rgba(139,92,246,0.1);color:var(--purple)}
+.tag.cot{background:rgba(6,182,212,0.1);color:var(--cyan)}
+.tag.nueva{background:rgba(59,130,246,0.1);color:var(--blue)}
+.tag.postulado{background:rgba(59,130,246,0.1);color:var(--blue)}
+.tag.ganado{background:rgba(16,185,129,0.1);color:var(--green)}
+.tag.perdido{background:rgba(239,68,68,0.1);color:var(--red)}
+.tag.evaluacion{background:rgba(245,158,11,0.1);color:var(--orange)}
+.tag.etiq{background:var(--bg4);color:var(--text2);border:1px solid var(--border2)}
+.tag.prio-alta{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.tag.prio-media{background:rgba(245,158,11,0.1);color:var(--orange);border:1px solid rgba(245,158,11,0.2)}
+.tag.prio-baja{background:rgba(59,130,246,0.1);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+.lic-actions{display:flex;gap:0.3rem;flex-wrap:wrap}
+.act-btn{font-size:0.6rem;padding:0.18rem 0.48rem;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;font-family:var(--body)}
+.act-btn:hover{border-color:var(--blue);color:var(--blue)}
+.act-btn.primary{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.25);color:var(--blue)}
+.lic-right{display:flex;flex-direction:column;align-items:flex-end;gap:0.35rem;min-width:110px}
+.lic-monto{font-family:var(--mono);font-size:0.88rem;font-weight:700;color:var(--green)}
+.lic-cierre{font-size:0.65rem;color:var(--text2);font-family:var(--mono);text-align:right}
+.lic-cierre.urgente{color:var(--red)}
+.lic-cierre.pronto{color:var(--orange)}
+.oferentes{font-size:0.62rem;color:var(--text3);font-family:var(--mono)}
+
+/* WHATSAPP PREVIEW */
+.wsp-preview{background:#0b1a13;border:1px solid #1a3a2a;border-radius:12px;padding:1rem 1.1rem;font-family:var(--mono);font-size:0.75rem;line-height:1.8;color:#e2f5ea;position:relative;overflow:hidden}
+.wsp-preview::before{content:'WhatsApp Preview';position:absolute;top:0.5rem;right:0.75rem;font-size:0.55rem;color:#2d6a4f;letter-spacing:0.08em}
+.wsp-line{display:block}
+.wsp-bold{font-weight:700;color:#25d366}
+
+/* SCRAPER STATUS */
+.scraper-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem}
+.scraper-stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:0.85rem;text-align:center}
+.ss-val{font-family:var(--display);font-size:1.4rem;font-weight:700;color:var(--cyan)}
+.ss-label{font-size:0.65rem;color:var(--text2);margin-top:0.2rem}
+.log-item{display:flex;align-items:center;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border);font-size:0.72rem;font-family:var(--mono)}
+.log-item:last-child{border:none}
+.log-time{color:var(--text3);flex-shrink:0;font-size:0.62rem}
+.log-ok{color:var(--green)}
+.log-warn{color:var(--orange)}
+.log-err{color:var(--red)}
+
+/* CIERRES */
+.cierre-item{padding:0.8rem 1.3rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.7rem}
+.cierre-item:last-child{border:none}
+.cierre-dias{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:0.68rem;font-weight:700;flex-shrink:0}
+.cierre-dias.urgente{background:rgba(239,68,68,0.1);color:var(--red)}
+.cierre-dias.pronto{background:rgba(245,158,11,0.1);color:var(--orange)}
+.cierre-dias.normal{background:rgba(59,130,246,0.1);color:var(--blue)}
+.cierre-info{flex:1;min-width:0}
+.cierre-nombre{font-size:0.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cierre-org{font-size:0.65rem;color:var(--text2);margin-top:1px}
+.cierre-monto{font-family:var(--mono);font-size:0.65rem;color:var(--green);margin-top:2px}
+
+/* ALERTAS */
+.alerta-item{padding:0.85rem 1.3rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:0.7rem}
+.alerta-item:last-child{border:none}
+.alerta-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0}
+.alerta-icon.ok{background:rgba(16,185,129,0.1)}
+.alerta-icon.fail{background:rgba(239,68,68,0.1)}
+.alerta-info{flex:1}
+.alerta-nombre{font-size:0.78rem;font-weight:500}
+.alerta-meta{font-size:0.65rem;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+.alerta-canal{font-size:0.58rem;padding:0.1rem 0.38rem;border-radius:4px;background:rgba(37,211,102,0.1);color:#25d366;margin-left:0.4rem}
+.alerta-canal.fail{background:rgba(239,68,68,0.1);color:var(--red)}
+
+/* CONFIG */
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid var(--border)}
+.config-row:last-child{border:none}
+.config-label{font-size:0.76rem}
+.config-sub{font-size:0.62rem;color:var(--text2);margin-top:1px}
+.config-input{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.38rem 0.65rem;color:var(--text);font-family:var(--mono);font-size:0.72rem;outline:none}
+.config-input:focus{border-color:var(--blue)}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0}
+.toggle input{display:none}
+.toggle-track{position:absolute;inset:0;background:var(--bg5);border-radius:10px;transition:background 0.2s}
+.toggle input:checked+.toggle-track{background:var(--blue)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle input:checked~.toggle-thumb{transform:translateX(16px)}
+.kw-list{display:flex;flex-wrap:wrap;gap:0.35rem;margin-bottom:0.65rem}
+.kw-tag{font-family:var(--mono);font-size:0.62rem;padding:0.18rem 0.55rem;border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:0.25rem}
+.kw-tag.include{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:var(--blue)}
+.kw-tag.exclude{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.kw-tag:hover{opacity:0.7}
+.kw-input-row{display:flex;gap:0.4rem}
+.kw-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.38rem 0.65rem;color:var(--text);font-family:var(--mono);font-size:0.72rem;outline:none}
+.kw-input:focus{border-color:var(--blue)}
+.config-section-title{font-family:var(--display);font-size:0.8rem;font-weight:600;color:var(--text2);padding-bottom:0.4rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem}
+
+/* IA */
+.ia-card{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:0.8rem;cursor:pointer;transition:all 0.15s;margin-bottom:0.5rem}
+.ia-card:hover{border-color:var(--blue);background:rgba(59,130,246,0.05)}
+.ia-card:last-child{margin-bottom:0}
+.ia-nombre{font-size:0.78rem;font-weight:500;margin-bottom:0.18rem}
+.ia-desc{font-size:0.65rem;color:var(--text2)}
+
+/* USUARIOS */
+.user-table{width:100%;border-collapse:collapse}
+.user-table th{padding:0.6rem 1.3rem;text-align:left;font-size:0.6rem;color:var(--text3);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.user-table td{padding:0.8rem 1.3rem;border-bottom:1px solid var(--border);font-size:0.78rem}
+.user-table tr:last-child td{border:none}
+.user-av-sm{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;color:#fff;flex-shrink:0}
+.role-badge{font-size:0.62rem;padding:0.18rem 0.48rem;border-radius:4px;font-family:var(--mono)}
+.role-badge.admin{background:rgba(59,130,246,0.1);color:var(--blue)}
+.role-badge.usuario{background:rgba(16,185,129,0.1);color:var(--green)}
+.role-badge.readonly{background:var(--bg4);color:var(--text2)}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.25rem;right:1.25rem;display:flex;flex-direction:column;gap:0.45rem;z-index:999}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:0.6rem 0.9rem;display:flex;align-items:center;gap:0.55rem;min-width:240px;animation:toastIn 0.25s ease;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+@keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.toast-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.toast-msg{font-size:0.75rem}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="brand">
+    <div class="brand-logo">L</div>
+    <div>
+      <div class="brand-name">Lici<span>tando</span></div>
+      <div class="brand-status"><span class="status-pulse"></span> Sistema activo</div>
+    </div>
+  </div>
+
+  <div class="nav-section">Principal</div>
+  <button class="nav-item active" onclick="ir('dashboard',this)"><span class="ni">⊞</span> Dashboard</button>
+  <button class="nav-item" onclick="ir('busqueda',this)"><span class="ni">◎</span> Búsqueda <span class="nav-badge blue">21</span></button>
+  <button class="nav-item" onclick="ir('seguimiento',this)"><span class="ni">▷</span> Seguimiento <span class="nav-badge orange">5</span></button>
+  <button class="nav-item" onclick="ir('cierres',this)"><span class="ni">⏰</span> Próximos cierres <span class="nav-badge red">3</span></button>
+
+  <div class="nav-section">Gestión</div>
+  <button class="nav-item" onclick="ir('alertas',this)"><span class="ni">📱</span> Historial alertas <span class="nav-badge green">7</span></button>
+  <button class="nav-item" onclick="ir('presupuestos',this)"><span class="ni">📄</span> Presupuestos</button>
+  <button class="nav-item" onclick="ir('decjurada',this)"><span class="ni">✍</span> Decl. Jurada</button>
+
+  <div class="nav-section">Inteligencia</div>
+  <button class="nav-item" onclick="ir('ia',this)"><span class="ni">🤖</span> Analizar bases IA</button>
+  <button class="nav-item" onclick="ir('competidores',this)"><span class="ni">📊</span> Competidores</button>
+  <button class="nav-item" onclick="ir('scraper',this)"><span class="ni">⚙</span> Monitor scraper</button>
+
+  <div class="nav-section">Sistema</div>
+  <button class="nav-item" onclick="ir('usuarios',this)"><span class="ni">👥</span> Usuarios</button>
+  <button class="nav-item" onclick="ir('config',this)"><span class="ni">🔧</span> Configuración</button>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-av">Y</div>
+      <div>
+        <div class="user-name">Young</div>
+        <div class="user-role">Administrador</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div id="pageTitle">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Resumen de tu actividad — Mercado Público Chile</div>
+    </div>
+    <div class="topbar-right">
+      <div class="period-tabs">
+        <button class="ptab active" onclick="selPtab(this)">Hoy</button>
+        <button class="ptab" onclick="selPtab(this)">7 días</button>
+        <button class="ptab" onclick="selPtab(this)">Mes</button>
+        <button class="ptab" onclick="selPtab(this)">3 meses</button>
+      </div>
+      <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+      <button class="tb-btn primary" onclick="toast('🔍 Revisando Mercado Público...','green')">↻ Revisar ahora</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="section active" id="s-dashboard">
+      <div class="metrics-grid">
+        <div class="metric blue"><div class="m-label">Licitaciones detectadas</div><div class="m-val blue">147</div><span class="m-change up">+23%</span><span class="m-compare">vs mes ant.</span></div>
+        <div class="metric green"><div class="m-label">Monto total en juego</div><div class="m-val green">$48M</div><span class="m-change up">+$12M</span><span class="m-compare">vs mes ant.</span></div>
+        <div class="metric orange"><div class="m-label">Postulaciones enviadas</div><div class="m-val orange">31</div><span class="m-change up">+8</span><span class="m-compare">vs mes ant.</span></div>
+        <div class="metric purple"><div class="m-label">Tasa adjudicación</div><div class="m-val purple">34%</div><span class="m-change up">+6%</span><span class="m-compare">vs mes ant.</span></div>
+      </div>
+      <div class="metrics-grid2">
+        <div class="metric cyan"><div class="m-label">En Compra Ágil</div><div class="m-val cyan" style="font-size:1.3rem">$22.2M</div><span class="m-change up">8 activas</span></div>
+        <div class="metric red"><div class="m-label">Cierran esta semana</div><div class="m-val red" style="font-size:1.3rem">3</div><span class="m-change down">¡Urgente!</span></div>
+        <div class="metric orange"><div class="m-label">Por leer</div><div class="m-val orange" style="font-size:1.3rem">12</div><div style="background:var(--bg4);border-radius:3px;height:3px;margin-top:0.4rem"><div style="width:0%;height:100%;background:var(--orange);border-radius:3px"></div></div><div style="font-size:0.6rem;color:var(--text3);margin-top:0.2rem">0% revisadas</div></div>
+        <div class="metric green"><div class="m-label">Alertas WhatsApp hoy</div><div class="m-val green" style="font-size:1.3rem">7</div><span class="m-change up">✓ Enviadas</span></div>
+      </div>
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">Licitaciones por mes</div><div class="card-sub">Detectadas vs postuladas — señalética y afines</div></div>
+            <div class="period-tabs"><button class="ptab active" onclick="selPtab(this)">6M</button><button class="ptab" onclick="selPtab(this)">1A</button></div>
+          </div>
+          <div class="card-body">
+            <svg class="chart-svg" viewBox="0 0 660 170" preserveAspectRatio="none">
+              <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs>
+              <line x1="0" y1="42" x2="660" y2="42" stroke="#1e2336" stroke-width="1"/>
+              <line x1="0" y1="85" x2="660" y2="85" stroke="#1e2336" stroke-width="1"/>
+              <line x1="0" y1="128" x2="660" y2="128" stroke="#1e2336" stroke-width="1"/>
+              <text x="4" y="40" fill="#363d55" font-size="10" font-family="IBM Plex Mono">40</text>
+              <text x="4" y="83" fill="#363d55" font-size="10" font-family="IBM Plex Mono">25</text>
+              <text x="4" y="126" fill="#363d55" font-size="10" font-family="IBM Plex Mono">10</text>
+              <path fill="url(#g1)" d="M20,130 C100,108 160,52 220,68 C280,84 320,35 390,42 C440,48 500,78 550,58 C590,42 630,28 660,18 L660,170 L20,170 Z"/>
+              <path fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" d="M20,130 C100,108 160,52 220,68 C280,84 320,35 390,42 C440,48 500,78 550,58 C590,42 630,28 660,18"/>
+              <path fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 3" opacity="0.6" d="M20,152 C100,146 160,122 220,132 C280,142 320,102 390,112 C440,120 500,135 550,118 C590,105 630,92 660,84"/>
+              <circle cx="220" cy="68" r="4" fill="#3b82f6" stroke="#080a10" stroke-width="2"/>
+              <circle cx="390" cy="42" r="4" fill="#3b82f6" stroke="#080a10" stroke-width="2"/>
+              <circle cx="550" cy="58" r="4" fill="#3b82f6" stroke="#080a10" stroke-width="2"/>
+              <circle cx="660" cy="18" r="4" fill="#3b82f6" stroke="#080a10" stroke-width="2"/>
+            </svg>
+            <div class="chart-labels"><span class="chart-lbl">Oct</span><span class="chart-lbl">Nov</span><span class="chart-lbl">Dic</span><span class="chart-lbl">Ene</span><span class="chart-lbl">Feb</span><span class="chart-lbl">Mar</span></div>
+            <div class="legend"><div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div>Detectadas</div><div class="leg-item"><div class="leg-dot" style="background:var(--green);opacity:0.6"></div>Postuladas</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">Rendimiento</div><div class="card-sub">Estado postulaciones</div></div></div>
+          <div class="donut-wrap">
+            <svg width="125" height="125" viewBox="0 0 125 125">
+              <circle cx="62.5" cy="62.5" r="46" fill="none" stroke="#1e2336" stroke-width="13"/>
+              <circle cx="62.5" cy="62.5" r="46" fill="none" stroke="#10b981" stroke-width="13" stroke-dasharray="98 191" stroke-dashoffset="-48" stroke-linecap="round"/>
+              <circle cx="62.5" cy="62.5" r="46" fill="none" stroke="#3b82f6" stroke-width="13" stroke-dasharray="56 191" stroke-dashoffset="-146" stroke-linecap="round"/>
+              <circle cx="62.5" cy="62.5" r="46" fill="none" stroke="#ef4444" stroke-width="13" stroke-dasharray="37 191" stroke-dashoffset="-202" stroke-linecap="round"/>
+            </svg>
+            <div class="donut-center"><div class="donut-pct">34%</div><div class="donut-lbl">adjudicado</div></div>
+          </div>
+          <div class="donut-legend">
+            <div class="dl-row"><div class="dl-color" style="background:var(--green)"></div><div class="dl-name">Adjudicadas</div><div class="dl-val" style="color:var(--green)">11</div></div>
+            <div class="dl-row"><div class="dl-color" style="background:var(--blue)"></div><div class="dl-name">En evaluación</div><div class="dl-val" style="color:var(--blue)">8</div></div>
+            <div class="dl-row"><div class="dl-color" style="background:var(--orange)"></div><div class="dl-name">Pendientes</div><div class="dl-val" style="color:var(--orange)">6</div></div>
+            <div class="dl-row"><div class="dl-color" style="background:var(--red)"></div><div class="dl-name">No adjudicadas</div><div class="dl-val" style="color:var(--red)">6</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">⚠️ Cierran pronto</div><div class="card-sub">Requieren atención inmediata</div></div><button class="tb-btn" onclick="ir('cierres',document.querySelectorAll('.nav-item')[3])">Ver todos →</button></div>
+        <div class="cierre-item"><div class="cierre-dias urgente">1d</div><div class="cierre-info"><div class="cierre-nombre">Señalética vial sector centro Coyhaique</div><div class="cierre-org">Municipalidad de Coyhaique · Aysén</div><div class="cierre-monto">$6.300.000</div></div><span class="tag prio-alta">🔴 ALTA</span><button class="tb-btn primary" onclick="toast('Abriendo licitación...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias urgente">2d</div><div class="cierre-info"><div class="cierre-nombre">Rótulos identificación oficinas SII</div><div class="cierre-org">SII Santiago Centro · RM</div><div class="cierre-monto">$980.000</div></div><span class="tag prio-alta">🔴 ALTA</span><button class="tb-btn primary" onclick="toast('Abriendo licitación...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias pronto">4d</div><div class="cierre-info"><div class="cierre-nombre">Letreros luminosos aeropuerto AMB</div><div class="cierre-org">DGAC Chile · RM</div><div class="cierre-monto">$18.500.000</div></div><span class="tag prio-media">🟡 MEDIA</span><button class="tb-btn" onclick="toast('Abriendo licitación...','blue')">Ver →</button></div>
+      </div>
+    </div>
+
+    <!-- ══ BÚSQUEDA ══ -->
+    <div class="section" id="s-busqueda">
+      <div class="card">
+        <div class="lic-filters">
+          <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" placeholder="Buscar por nombre, ID, organismo..."></div>
+          <button class="pill active" onclick="selPill(this,'.lic-filters')">Todas</button>
+          <button class="pill" onclick="selPill(this,'.lic-filters')">🔴 Alta prioridad</button>
+          <button class="pill" onclick="selPill(this,'.lic-filters')">Compra Ágil</button>
+          <button class="pill" onclick="selPill(this,'.lic-filters')">LP</button>
+          <button class="pill" onclick="selPill(this,'.lic-filters')">Nuevas</button>
+        </div>
+        <div class="lic-list">
+          <div class="lic-item" onclick="ir('detalle',null)">
+            <div class="prio alta"></div>
+            <div>
+              <div class="lic-codigo">ID: 2494-32-LP26 <span onclick="event.stopPropagation();toast('Código copiado ✓','green')" style="cursor:pointer">⧉</span></div>
+              <div class="lic-nombre">Construcción Señalética Sector Centro Coyhaique</div>
+              <div class="lic-org">🏛 Municipalidad de Coyhaique — Región de Aysén</div>
+              <div class="lic-tags"><span class="tag lp">LP</span><span class="tag nueva">● Nueva</span><span class="tag prio-alta">🔴 ALTA</span><span class="tag etiq">🏷 urgente</span></div>
+              <div class="lic-actions">
+                <button class="act-btn primary" onclick="event.stopPropagation();ir('detalle',null)">Ver detalle</button>
+                <button class="act-btn" onclick="event.stopPropagation();toast('Enviado a seguimiento ✓','green')">+ Seguimiento</button>
+                <button class="act-btn" onclick="event.stopPropagation();ir('ia',null)">🤖 Analizar IA</button>
+                <button class="act-btn" onclick="event.stopPropagation();ir('alertas',null)">📱 Ver alerta</button>
+              </div>
+            </div>
+            <div class="lic-right">
+              <div class="lic-monto">N/E</div>
+              <div class="lic-cierre urgente">Cierra 13/04 15:00</div>
+              <div class="oferentes">👥 hist: 2-3 oferentes</div>
+            </div>
+          </div>
+          <div class="lic-item" onclick="ir('detalle',null)">
+            <div class="prio alta"></div>
+            <div>
+              <div class="lic-codigo">ID: 3825-99-COT26 <span onclick="event.stopPropagation();toast('Código copiado ✓','green')" style="cursor:pointer">⧉</span></div>
+              <div class="lic-nombre">Compra de Señaleticas y Postes Omega (DIMAO)</div>
+              <div class="lic-org">🏛 Municipalidad de Santiago — Región Metropolitana</div>
+              <div class="lic-tags"><span class="tag agil">Ágil 1°</span><span class="tag postulado">● Postulado</span><span class="tag prio-alta">🔴 ALTA</span></div>
+              <div class="lic-actions">
+                <button class="act-btn primary" onclick="event.stopPropagation();ir('detalle',null)">Ver detalle</button>
+                <button class="act-btn" onclick="event.stopPropagation();ir('ia',null)">🤖 Analizar IA</button>
+              </div>
+            </div>
+            <div class="lic-right">
+              <div class="lic-monto">$4.200.000</div>
+              <div class="lic-cierre urgente">Cierra 25/03 17:00</div>
+              <div class="oferentes">👥 hist: 4-6 oferentes</div>
+            </div>
+          </div>
+          <div class="lic-item">
+            <div class="prio media"></div>
+            <div>
+              <div class="lic-codigo">ID: 756-44-LP26</div>
+              <div class="lic-nombre">Tótems direccionales y directorio edificio público MOP</div>
+              <div class="lic-org">🏛 Ministerio de Obras Públicas — Región Metropolitana</div>
+              <div class="lic-tags"><span class="tag lp">LP</span><span class="tag evaluacion">● En evaluación</span><span class="tag prio-media">🟡 MEDIA</span></div>
+              <div class="lic-actions">
+                <button class="act-btn primary" onclick="event.stopPropagation()">Ver detalle</button>
+                <button class="act-btn" onclick="event.stopPropagation();ir('ia',null)">📊 Análisis competencia</button>
+              </div>
+            </div>
+            <div class="lic-right">
+              <div class="lic-monto">$12.400.000</div>
+              <div class="lic-cierre">Cierra 15/03</div>
+              <div class="oferentes">👥 hist: 8-12 oferentes</div>
+            </div>
+          </div>
+          <div class="lic-item">
+            <div class="prio baja"></div>
+            <div>
+              <div class="lic-codigo">ID: 1089-1605-COT26</div>
+              <div class="lic-nombre">Vinilos adhesivos señalética dependencias municipales</div>
+              <div class="lic-org">🏛 Municipalidad de Providencia — Región Metropolitana</div>
+              <div class="lic-tags"><span class="tag agil">Ágil 1°</span><span class="tag ganado">● Adjudicado ✓</span><span class="tag prio-baja">🔵 BAJA</span></div>
+              <div class="lic-actions"><button class="act-btn primary" onclick="event.stopPropagation()">Ver detalle</button></div>
+            </div>
+            <div class="lic-right">
+              <div class="lic-monto">$1.890.000</div>
+              <div class="lic-cierre">Cerrada 22/03</div>
+              <div class="oferentes">👥 hist: 2-3 oferentes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DETALLE ══ -->
+    <div class="section" id="s-detalle">
+      <div style="display:flex;align-items:center;gap:0.6rem">
+        <button class="tb-btn" onclick="ir('busqueda',document.querySelectorAll('.nav-item')[1])">← Volver</button>
+        <span class="tag lp">LP</span><span class="tag nueva">● Publicada</span><span class="tag prio-alta">🔴 ALTA PRIORIDAD</span>
+      </div>
+      <div class="charts-row">
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          <div class="card">
+            <div class="card-head"><div><div class="card-title">Construcción Señalética Sector Centro Coyhaique</div><div class="card-sub">ID: 2494-32-LP26 · Municipalidad de Coyhaique</div></div></div>
+            <div class="card-body">
+              <p style="font-size:0.8rem;color:var(--text2);line-height:1.65;margin-bottom:1rem">Implementación de 142 señales de tránsito y 61 para reposiciones futuras. Postes de madera y señalética de aluminio compuesto grabada mediante CNC router o similar.</p>
+              <div class="config-row"><span class="config-label" style="color:var(--text2);font-size:0.72rem">Publicación</span><span style="font-family:var(--mono);font-size:0.72rem">23/03/2026 17:34</span></div>
+              <div class="config-row"><span class="config-label" style="color:var(--text2);font-size:0.72rem">Cierre</span><span style="font-family:var(--mono);font-size:0.72rem;color:var(--red)">13/04/2026 15:00 ⚠️</span></div>
+              <div class="config-row"><span class="config-label" style="color:var(--text2);font-size:0.72rem">Región</span><span style="font-family:var(--mono);font-size:0.72rem">Aysén</span></div>
+              <div class="config-row"><span class="config-label" style="color:var(--text2);font-size:0.72rem">Oferentes históricos</span><span style="font-family:var(--mono);font-size:0.72rem;color:var(--green)">2-3 (baja competencia)</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Adjuntos (19)</div></div>
+            <div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--border)"><input type="text" placeholder="Filtrar adjuntos..." style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.38rem 0.65rem;color:var(--text);font-size:0.75rem;outline:none"></div>
+            <div class="cierre-item" style="padding:0.65rem 1rem"><span style="font-size:0.72rem;color:var(--text2)">📄 DA 3328 APRUEBA BASES TECNICAS.pdf</span><div style="display:flex;gap:0.3rem"><button class="act-btn" onclick="toast('Abriendo PDF...','blue')">👁 Ver</button><button class="act-btn" onclick="toast('Descargando...','green')">⬇</button></div></div>
+            <div class="cierre-item" style="padding:0.65rem 1rem"><span style="font-size:0.72rem;color:var(--text2)">📄 DTO4665 BASES ADMINISTRATIVAS.pdf</span><div style="display:flex;gap:0.3rem"><button class="act-btn" onclick="toast('Abriendo PDF...','blue')">👁 Ver</button><button class="act-btn" onclick="toast('Descargando...','green')">⬇</button></div></div>
+            <div class="cierre-item" style="padding:0.65rem 1rem"><span style="font-size:0.72rem;color:var(--text2)">📄 EETT SEÑALETICA.pdf</span><div style="display:flex;gap:0.3rem"><button class="act-btn" onclick="toast('Abriendo PDF...','blue')">👁 Ver</button><button class="act-btn" onclick="toast('Descargando...','green')">⬇</button></div></div>
+            <div class="cierre-item" style="padding:0.65rem 1rem;justify-content:center;color:var(--text3);font-size:0.7rem">+ 16 documentos más</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Mi estado</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:0.65rem">
+              <select style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.38rem 0.6rem;color:var(--text);font-size:0.76rem;outline:none;width:100%" onchange="toast('Estado actualizado ✓','green')">
+                <option>Sin revisar</option><option>Revisando bases</option><option>Postulado</option><option selected>Adjudicado ✓</option><option>No adjudicado</option>
+              </select>
+              <div style="display:flex;flex-wrap:wrap;gap:0.3rem"><span class="tag etiq">🏷 urgente</span><span class="tag etiq" style="cursor:pointer;border-style:dashed" onclick="toast('Agregar etiqueta...','blue')">+ nueva</span></div>
+              <button class="tb-btn primary" onclick="toast('En seguimiento ✓','green')" style="width:100%">▷ Seguimiento</button>
+              <button class="tb-btn" onclick="toast('Generando presupuesto...','blue')" style="width:100%">📄 Generar presupuesto</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">🤖 Analizar con IA</div></div>
+            <div class="card-body" style="padding-bottom:0.5rem">
+              <div class="ia-card" onclick="toast('Analizando bases... ~15 segundos','blue')"><div class="ia-nombre">⚡ Estrategia para Ganar</div><div class="ia-desc">Criterios, ponderaciones y tácticas para máximo puntaje</div></div>
+              <div class="ia-card" onclick="toast('Generando checklist...','blue')"><div class="ia-nombre">✅ Checklist Requisitos</div><div class="ia-desc">Documentos requeridos y causales de inadmisibilidad</div></div>
+              <div class="ia-card" onclick="toast('Analizando competencia...','blue')"><div class="ia-nombre">📊 Análisis Competencia</div><div class="ia-desc">Perfil del ganador y lecciones aprendidas</div></div>
+              <div class="ia-card" onclick="toast('Evaluando en 3 puntos...','blue')"><div class="ia-nombre">🎯 Evaluación Rápida</div><div class="ia-desc">¿Me conviene postular? Respuesta directa</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CIERRES ══ -->
+    <div class="section" id="s-cierres">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Próximos cierres</div><div class="card-sub">Ordenados por urgencia — actúa primero en los rojos</div></div></div>
+        <div class="cierre-item"><div class="cierre-dias urgente">1d</div><div class="cierre-info"><div class="cierre-nombre">Señalética vial sector centro Coyhaique</div><div class="cierre-org">Municipalidad de Coyhaique</div><div class="cierre-monto">$6.300.000</div></div><span class="tag prio-alta">🔴 ALTA</span><button class="tb-btn primary" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias urgente">2d</div><div class="cierre-info"><div class="cierre-nombre">Rótulos identificación oficinas SII</div><div class="cierre-org">SII Santiago Centro</div><div class="cierre-monto">$980.000</div></div><span class="tag prio-alta">🔴 ALTA</span><button class="tb-btn primary" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias urgente">2d</div><div class="cierre-info"><div class="cierre-nombre">Compra Señaleticas y Postes Omega</div><div class="cierre-org">Municipalidad de Santiago</div><div class="cierre-monto">$4.200.000</div></div><span class="tag prio-alta">🔴 ALTA</span><button class="tb-btn primary" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias pronto">4d</div><div class="cierre-info"><div class="cierre-nombre">Letreros luminosos aeropuerto AMB</div><div class="cierre-org">DGAC Chile</div><div class="cierre-monto">$18.500.000</div></div><span class="tag prio-media">🟡 MEDIA</span><button class="tb-btn" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias pronto">6d</div><div class="cierre-info"><div class="cierre-nombre">Banner y pendones evento regional</div><div class="cierre-org">Intendencia Biobío</div><div class="cierre-monto">$2.100.000</div></div><span class="tag prio-media">🟡 MEDIA</span><button class="tb-btn" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+        <div class="cierre-item"><div class="cierre-dias normal">12d</div><div class="cierre-info"><div class="cierre-nombre">Señalética hospital pediátrico</div><div class="cierre-org">Servicio de Salud Sur</div><div class="cierre-monto">$5.700.000</div></div><span class="tag prio-baja">🔵 BAJA</span><button class="tb-btn" onclick="toast('Abriendo...','blue')">Ver →</button></div>
+      </div>
+    </div>
+
+    <!-- ══ ALERTAS ══ -->
+    <div class="section" id="s-alertas">
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">Historial de alertas WhatsApp</div><div class="card-sub">Registro de todos los mensajes enviados</div></div></div>
+          <div class="alerta-item"><div class="alerta-icon ok">✅</div><div class="alerta-info"><div class="alerta-nombre">Construcción Señalética Sector Centro Coyhaique<span class="alerta-canal">📱 WhatsApp</span></div><div class="alerta-meta">23/03/2026 17:34 · 🔴 ALTA · 2-3 oferentes · POSTULAR RÁPIDO</div></div></div>
+          <div class="alerta-item"><div class="alerta-icon ok">✅</div><div class="alerta-info"><div class="alerta-nombre">Compra Señaleticas y Postes Omega DIMAO<span class="alerta-canal">📱 WhatsApp</span></div><div class="alerta-meta">23/03/2026 10:12 · 🔴 ALTA · 4-6 oferentes · EVALUAR</div></div></div>
+          <div class="alerta-item"><div class="alerta-icon ok">✅</div><div class="alerta-info"><div class="alerta-nombre">Rótulos identificación oficinas SII Santiago<span class="alerta-canal">📱 WhatsApp</span></div><div class="alerta-meta">22/03/2026 14:50 · 🔴 ALTA · 3-5 oferentes · POSTULAR RÁPIDO</div></div></div>
+          <div class="alerta-item"><div class="alerta-icon fail">❌</div><div class="alerta-info"><div class="alerta-nombre">Letreros luminosos aeropuerto AMB<span class="alerta-canal fail">Fallida</span></div><div class="alerta-meta">22/03/2026 09:30 · Error Twilio · Reintentando con backoff...</div></div></div>
+          <div class="alerta-item"><div class="alerta-icon ok">✅</div><div class="alerta-info"><div class="alerta-nombre">Banner y pendones evento regional Biobío<span class="alerta-canal">📱 WhatsApp</span></div><div class="alerta-meta">21/03/2026 16:22 · 🟡 MEDIA · 5-8 oferentes · EVALUAR</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Preview mensaje WhatsApp</div></div>
+          <div class="card-body">
+            <div class="wsp-preview">
+              <span class="wsp-line"><span class="wsp-bold">🚨 Compra Ágil Detectada</span></span>
+              <span class="wsp-line"> </span>
+              <span class="wsp-line">💰 $1.250.000</span>
+              <span class="wsp-line">🏛️ Municipalidad de Coyhaique</span>
+              <span class="wsp-line">📦 Servicio: Letreros PVC</span>
+              <span class="wsp-line">⏳ Cierra en 4h</span>
+              <span class="wsp-line">📍 RM</span>
+              <span class="wsp-line"> </span>
+              <span class="wsp-line"><span style="color:#25d366">🟢 Probabilidad: ALTA</span></span>
+              <span class="wsp-line">👥 Histórico: 2-3 oferentes</span>
+              <span class="wsp-line"> </span>
+              <span class="wsp-line"><span class="wsp-bold">💡 POSTULAR RÁPIDO</span></span>
+              <span class="wsp-line"> </span>
+              <span class="wsp-line" style="color:#06b6d4">👉 Ver detalles: [link]</span>
+            </div>
+            <div style="margin-top:0.75rem;font-size:0.68rem;color:var(--text3);text-align:center">Formato definido · Via Twilio WhatsApp API</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCRAPER MONITOR ══ -->
+    <div class="section" id="s-scraper">
+      <div class="metrics-grid">
+        <div class="metric cyan"><div class="m-label">Modo actual</div><div style="font-family:var(--display);font-size:1.1rem;font-weight:700;color:var(--cyan)">PICO</div><div style="font-size:0.62rem;color:var(--text2);margin-top:0.3rem">09:00-13:00 · cada 3-5 min</div></div>
+        <div class="metric green"><div class="m-label">Próxima ejecución</div><div class="m-val green" style="font-size:1.3rem">4m</div><span style="font-family:var(--mono);font-size:0.62rem;color:var(--text3)">intervalo aleatorio</span></div>
+        <div class="metric blue"><div class="m-label">Ejecuciones hoy</div><div class="m-val blue" style="font-size:1.3rem">87</div><span class="m-change up">Sin bloqueos</span></div>
+        <div class="metric orange"><div class="m-label">Requests ahorrados</div><div class="m-val orange" style="font-size:1.3rem">340</div><span style="font-size:0.62rem;color:var(--text3)">paginación inteligente</span></div>
+      </div>
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">Frecuencia dinámica</div><div class="card-sub">Intervalos según horario — simulando comportamiento humano</div></div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:0.6rem">
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:0.75rem;align-items:center;padding:0.65rem 0.85rem;border-radius:8px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.15)">
+              <span style="font-family:var(--mono);font-size:0.72rem;color:var(--cyan)">09:00–13:00</span>
+              <div style="background:var(--bg4);border-radius:3px;height:6px"><div style="width:85%;height:100%;background:var(--cyan);border-radius:3px"></div></div>
+              <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text2)">3–5 min</span>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:0.75rem;align-items:center;padding:0.65rem 0.85rem;border-radius:8px;background:var(--bg3);border:1px solid var(--border)">
+              <span style="font-family:var(--mono);font-size:0.72rem;color:var(--blue)">13:00–18:30</span>
+              <div style="background:var(--bg4);border-radius:3px;height:6px"><div style="width:60%;height:100%;background:var(--blue);border-radius:3px"></div></div>
+              <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text2)">5–10 min</span>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:0.75rem;align-items:center;padding:0.65rem 0.85rem;border-radius:8px;background:var(--bg3);border:1px solid var(--border)">
+              <span style="font-family:var(--mono);font-size:0.72rem;color:var(--orange)">18:30–23:00</span>
+              <div style="background:var(--bg4);border-radius:3px;height:6px"><div style="width:30%;height:100%;background:var(--orange);border-radius:3px"></div></div>
+              <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text2)">15–30 min</span>
+            </div>
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:0.75rem;align-items:center;padding:0.65rem 0.85rem;border-radius:8px;background:var(--bg3);border:1px solid var(--border)">
+              <span style="font-family:var(--mono);font-size:0.72rem;color:var(--text3)">23:00–08:30</span>
+              <div style="background:var(--bg4);border-radius:3px;height:6px"><div style="width:12%;height:100%;background:var(--text3);border-radius:3px"></div></div>
+              <span style="font-family:var(--mono);font-size:0.68rem;color:var(--text2)">30–60 min</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Log de actividad</div></div>
+          <div class="card-body" style="padding:0.5rem 0.75rem">
+            <div class="log-item"><span class="log-time">09:42</span><span class="log-ok">✓ 3 nuevas detectadas · señalética</span></div>
+            <div class="log-item"><span class="log-time">09:38</span><span class="log-ok">✓ Sin cambios · 2 páginas revisadas</span></div>
+            <div class="log-item"><span class="log-time">09:33</span><span class="log-ok">✓ 1 nueva · letrero PVC RM</span></div>
+            <div class="log-item"><span class="log-time">09:29</span><span class="log-ok">✓ Sin cambios · paginación OK</span></div>
+            <div class="log-item"><span class="log-time">09:24</span><span class="log-warn">⚠ Timeout · reintento backoff 30s</span></div>
+            <div class="log-item"><span class="log-time">09:20</span><span class="log-ok">✓ 2 nuevas · totem + vinilo</span></div>
+            <div class="log-item"><span class="log-time">09:15</span><span class="log-ok">✓ Sin cambios</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ IA ══ -->
+    <div class="section" id="s-ia">
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-head"><div><div class="card-title">🤖 Analizar bases con IA</div><div class="card-sub">Powered by Claude (Anthropic API) — invisible para el usuario</div></div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:0.85rem">
+            <div style="border:2px dashed var(--border2);border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer" onclick="toast('Seleccionar PDF de bases...','blue')">
+              <div style="font-size:1.8rem;margin-bottom:0.4rem">📄</div>
+              <div style="font-size:0.8rem;color:var(--text2)">Arrastra el PDF aquí o haz clic para seleccionar</div>
+            </div>
+            <div style="display:flex;gap:0.5rem">
+              <input type="text" placeholder="O ingresa ID licitación (ej: 2494-32-LP26)" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0.38rem 0.65rem;color:var(--text);font-size:0.76rem;outline:none">
+              <button class="tb-btn primary" onclick="toast('Descargando bases automáticamente...','green')">Auto-descargar</button>
+            </div>
+            <div class="ia-card" onclick="toast('Analizando con Claude API...','blue')"><div class="ia-nombre">⚡ Estrategia para Ganar</div><div class="ia-desc">Criterios de evaluación con ponderaciones, exigencias críticas y 3 estrategias para máximo puntaje</div></div>
+            <div class="ia-card" onclick="toast('Generando checklist...','blue')"><div class="ia-nombre">✅ Checklist de Requisitos</div><div class="ia-desc">Docs por categoría (Adm/Téc/Eco), certificaciones y causales de inadmisibilidad</div></div>
+            <div class="ia-card" onclick="toast('Analizando acta...','blue')"><div class="ia-nombre">📊 Análisis de Competencia</div><div class="ia-desc">Perfil del ganador, criterios determinantes y lección aprendida</div></div>
+            <div class="ia-card" onclick="toast('Evaluando...','blue')"><div class="ia-nombre">🎯 Evaluación Rápida</div><div class="ia-desc">¿Me conviene postular? Sí/No/Depende + 3 razones concretas</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Últimos análisis</div></div>
+          <div style="padding:0.75rem">
+            <div class="ia-card"><div class="ia-nombre" style="font-size:0.72rem">⚡ Estrategia para Ganar</div><div class="ia-desc">ID: 3825-99-COT26 · hace 2h · Claude API</div></div>
+            <div class="ia-card"><div class="ia-nombre" style="font-size:0.72rem">✅ Checklist Requisitos</div><div class="ia-desc">ID: 2494-32-LP26 · hace 5h · Claude API</div></div>
+            <div class="ia-card"><div class="ia-nombre" style="font-size:0.72rem">📊 Análisis Competencia</div><div class="ia-desc">ID: 2201-88-COT26 · ayer · Claude API</div></div>
+          </div>
+          <div class="card-head" style="border-top:1px solid var(--border);border-bottom:none"><div class="card-title" style="font-size:0.78rem">Estado API Anthropic</div></div>
+          <div class="card-body" style="padding:0.75rem">
+            <div class="config-row" style="border:none;padding:0.25rem 0"><span style="font-size:0.72rem;color:var(--text2)">Modelo</span><span style="font-family:var(--mono);font-size:0.68rem;color:var(--cyan)">claude-sonnet-4-6</span></div>
+            <div class="config-row" style="border:none;padding:0.25rem 0"><span style="font-size:0.72rem;color:var(--text2)">Estado</span><span style="font-family:var(--mono);font-size:0.68rem;color:var(--green)">● Operativo</span></div>
+            <div class="config-row" style="border:none;padding:0.25rem 0"><span style="font-size:0.72rem;color:var(--text2)">Costo estimado/mes</span><span style="font-family:var(--mono);font-size:0.68rem;color:var(--text2)">~$0.50 USD</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEGUIMIENTO ══ -->
+    <div class="section" id="s-seguimiento">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Seguimiento de postulaciones</div><div class="card-sub">Licitaciones que estás gestionando activamente</div></div></div>
+        <div class="lic-list">
+          <div class="lic-item"><div class="prio alta"></div><div><div class="lic-codigo">ID: 2494-32-LP26</div><div class="lic-nombre">Construcción Señalética Sector Centro Coyhaique</div><div class="lic-org">🏛 Municipalidad de Coyhaique</div><div class="lic-tags"><span class="tag lp">LP</span><span class="tag nueva">● Revisando</span><span class="tag prio-alta">🔴 ALTA</span></div></div><div class="lic-right"><div class="lic-monto">N/E</div><div class="lic-cierre urgente">Cierra en 21 días</div></div></div>
+          <div class="lic-item"><div class="prio alta"></div><div><div class="lic-codigo">ID: 3825-99-COT26</div><div class="lic-nombre">Compra Señaleticas y Postes Omega (DIMAO)</div><div class="lic-org">🏛 Municipalidad de Santiago</div><div class="lic-tags"><span class="tag agil">Ágil 1°</span><span class="tag postulado">● Postulado</span><span class="tag prio-alta">🔴 ALTA</span></div></div><div class="lic-right"><div class="lic-monto">$4.200.000</div><div class="lic-cierre urgente">Cierra en 2 días</div></div></div>
+          <div class="lic-item"><div class="prio media"></div><div><div class="lic-codigo">ID: 756-44-LP26</div><div class="lic-nombre">Tótems direccionales edificio MOP</div><div class="lic-org">🏛 Ministerio de Obras Públicas</div><div class="lic-tags"><span class="tag lp">LP</span><span class="tag evaluacion">● En evaluación</span><span class="tag prio-media">🟡 MEDIA</span></div></div><div class="lic-right"><div class="lic-monto">$12.400.000</div><div class="lic-cierre">Esperando acta</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USUARIOS ══ -->
+    <div class="section" id="s-usuarios">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Gestión de usuarios</div><div class="card-sub">Roles: Administrador / Usuario / Solo lectura</div></div><div style="display:flex;gap:0.5rem"><button class="tb-btn" onclick="toast('Agregar contacto...','blue')">+ Contacto</button><button class="tb-btn primary" onclick="toast('Invitar usuario...','green')">+ Agregar</button></div></div>
+        <table class="user-table">
+          <thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Último acceso</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div style="display:flex;align-items:center;gap:0.55rem"><div class="user-av-sm" style="background:linear-gradient(135deg,var(--blue),var(--purple))">Y</div><span style="font-weight:500">Young</span></div></td><td style="color:var(--text2);font-size:0.72rem">young@empresa.cl</td><td><span class="role-badge admin">Administrador</span></td><td style="color:var(--text2);font-size:0.68rem;font-family:var(--mono)">Ahora</td><td></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:0.55rem"><div class="user-av-sm" style="background:linear-gradient(135deg,var(--green),var(--cyan))">B</div><span style="font-weight:500">Bastian</span></div></td><td style="color:var(--text2);font-size:0.72rem">bastian@empresa.cl</td><td><select style="background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:0.18rem 0.45rem;color:var(--text);font-size:0.68rem;outline:none" onchange="toast('Rol actualizado ✓','green')"><option>Usuario</option><option>Administrador</option><option>Solo lectura</option></select></td><td style="color:var(--text2);font-size:0.68rem;font-family:var(--mono)">Hoy 14:32</td><td><button class="act-btn" onclick="toast('Eliminar usuario...','red')">✕</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ CONFIG ══ -->
+    <div class="section" id="s-config">
+      <div class="charts-row">
+        <div class="card"><div class="card-body">
+          <div style="margin-bottom:1.25rem">
+            <div class="config-section-title">Palabras clave — Incluir</div>
+            <div class="kw-list">
+              <span class="kw-tag include">señaletica ×</span><span class="kw-tag include">señalética ×</span><span class="kw-tag include">letrero ×</span><span class="kw-tag include">vinilo ×</span><span class="kw-tag include">cartel ×</span><span class="kw-tag include">rotulo ×</span><span class="kw-tag include">totem ×</span><span class="kw-tag include">banner ×</span><span class="kw-tag include">placa ×</span><span class="kw-tag include">señalizacion ×</span>
+            </div>
+            <div class="kw-input-row"><input class="kw-input" placeholder="Agregar palabra..."><button class="tb-btn primary" onclick="toast('Palabra incluida ✓','green')">+ Incluir</button></div>
+          </div>
+          <div style="margin-bottom:1.25rem">
+            <div class="config-section-title">Palabras de exclusión</div>
+            <div class="kw-list">
+              <span class="kw-tag exclude">software ×</span><span class="kw-tag exclude">capacitacion ×</span><span class="kw-tag exclude">consultoría ×</span>
+            </div>
+            <div class="kw-input-row"><input class="kw-input" placeholder="Palabra a excluir..."><button class="tb-btn danger" onclick="toast('Palabra excluida ✓','orange')">✕ Excluir</button></div>
+          </div>
+          <div style="margin-bottom:1.25rem">
+            <div class="config-section-title">Modo búsqueda</div>
+            <div style="display:flex;gap:0.5rem">
+              <button class="pill active" onclick="selPill(this,'#modobusq')">OR — cualquier palabra</button>
+              <button class="pill" onclick="selPill(this,'#modobusq')">AND — todas las palabras</button>
+            </div>
+          </div>
+          <div style="margin-bottom:1.25rem">
+            <div class="config-section-title">Alertas WhatsApp</div>
+            <div class="config-row"><div><div class="config-label">Mi número</div></div><input class="config-input" value="+569XXXXXXXX"></div>
+            <div class="config-row"><div><div class="config-label">Número grupo</div><div class="config-sub">Alertas a grupo de WhatsApp</div></div><input class="config-input" placeholder="+569XXXXXXXX"></div>
+            <div class="config-row"><div><div class="config-label">Alertas activas</div></div><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          </div>
+          <button class="tb-btn primary" onclick="toast('Configuración guardada ✓','green')" style="width:100%;padding:0.55rem">Guardar todo</button>
+        </div></div>
+        <div style="display:flex;flex-direction:column;gap:0.75rem">
+          <div class="card"><div class="card-head"><div class="card-title">Estado del sistema</div></div>
+            <div class="card-body" style="padding:0.75rem">
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Scraper Railway</span><span style="font-size:0.68rem;color:var(--green);font-family:var(--mono)">● Activo</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Supabase DB</span><span style="font-size:0.68rem;color:var(--green);font-family:var(--mono)">● Conectado</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Twilio WhatsApp</span><span style="font-size:0.68rem;color:var(--green);font-family:var(--mono)">● Operativo</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Claude API</span><span style="font-size:0.68rem;color:var(--green);font-family:var(--mono)">● Operativo</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Última revisión</span><span style="font-size:0.68rem;color:var(--text2);font-family:var(--mono)">hace 4 min</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Próxima revisión</span><span style="font-size:0.68rem;color:var(--cyan);font-family:var(--mono)">en 3 min</span></div>
+              <div class="config-row" style="border:none;padding:0.28rem 0"><span style="font-size:0.72rem;color:var(--text2)">Modo horario</span><span style="font-size:0.68rem;color:var(--cyan);font-family:var(--mono)">PICO (3-5 min)</span></div>
+            </div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-title">Conexiones</div></div>
+            <div class="card-body" style="padding:0.75rem;display:flex;flex-direction:column;gap:0.5rem">
+              <div><div style="font-size:0.68rem;color:var(--text2);margin-bottom:0.3rem">Twilio Account SID</div><input class="config-input" type="password" value="ACxxxxxxxx" style="width:100%"></div>
+              <div><div style="font-size:0.68rem;color:var(--text2);margin-bottom:0.3rem">Supabase URL</div><input class="config-input" value="https://xxx.supabase.co" style="width:100%"></div>
+              <div><div style="font-size:0.68rem;color:var(--text2);margin-bottom:0.3rem">Anthropic API Key</div><input class="config-input" type="password" value="sk-ant-xxxxx" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PRESUPUESTOS ══ -->
+    <div class="section" id="s-presupuestos">
+      <div class="card"><div class="card-body" style="text-align:center;padding:3rem">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">📄</div>
+        <div style="font-family:var(--display);font-size:0.95rem;font-weight:600;margin-bottom:0.4rem">Módulo de Presupuestos</div>
+        <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.25rem">Genera cotizaciones PDF a partir de los datos de la licitación.<br>Disponible en próxima etapa.</div>
+        <button class="tb-btn primary" onclick="toast('¡Pronto disponible!','blue')">Próximamente</button>
+      </div></div>
+    </div>
+
+    <!-- ══ COMPETIDORES ══ -->
+    <div class="section" id="s-competidores">
+      <div class="card"><div class="card-body" style="text-align:center;padding:3rem">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">📊</div>
+        <div style="font-family:var(--display);font-size:0.95rem;font-weight:600;margin-bottom:0.4rem">Análisis de Competidores</div>
+        <div style="font-size:0.78rem;color:var(--text2);margin-bottom:1.25rem">Quién gana señalética, a qué precios y con qué organismos.<br>Disponible una vez el sistema acumule datos históricos.</div>
+        <button class="tb-btn primary" onclick="toast('Disponible próximamente','blue')">Próximamente</button>
+      </div></div>
+    </div>
+
+    <!-- ══ DECL. JURADA ══ -->
+    <div class="section" id="s-decjurada">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Declaración Jurada de Requisitos para Ofertar</div><div class="card-sub">Complétala una vez — el sistema genera el PDF automáticamente</div></div></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:0.75rem">
+          <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.12);border-radius:8px;padding:0.75rem;font-size:0.76rem;color:var(--text2)">ℹ️ Completa esta declaración por única vez. El sistema generará el PDF listo para subir al portal en cada postulación.</div>
+          <div class="config-row"><span class="config-label">Representante Legal</span><input class="config-input" placeholder="Nombre completo" style="width:220px"></div>
+          <div class="config-row"><span class="config-label">RUT Empresa</span><input class="config-input" placeholder="12.345.678-9" style="width:220px"></div>
+          <div class="config-row"><span class="config-label">RUT Representante</span><input class="config-input" placeholder="12.345.678-9" style="width:220px"></div>
+          <div style="font-size:0.76rem;font-weight:500;margin-top:0.25rem">Declaraciones:</div>
+          <label style="display:flex;gap:0.65rem;align-items:flex-start;cursor:pointer;font-size:0.73rem;color:var(--text2)"><input type="checkbox" style="margin-top:3px;flex-shrink:0"> 1.- No he sido condenado por prácticas antisindicales dentro de los dos años anteriores.</label>
+          <label style="display:flex;gap:0.65rem;align-items:flex-start;cursor:pointer;font-size:0.73rem;color:var(--text2)"><input type="checkbox" style="margin-top:3px;flex-shrink:0"> 2.- No he sido condenado por el Tribunal de Defensa de la Libre Competencia dentro de los 5 años anteriores.</label>
+          <label style="display:flex;gap:0.65rem;align-items:flex-start;cursor:pointer;font-size:0.73rem;color:var(--text2)"><input type="checkbox" style="margin-top:3px;flex-shrink:0"> 3.- Mi representada no ha sido condenada a la prohibición de contratar con organismos del Estado.</label>
+          <label style="display:flex;gap:0.65rem;align-items:flex-start;cursor:pointer;font-size:0.73rem;color:var(--text2)"><input type="checkbox" style="margin-top:3px;flex-shrink:0"> 4.- No soy funcionario directivo del organismo licitante durante el último año.</label>
+          <button class="tb-btn primary" onclick="toast('Declaración guardada ✓ — PDF listo','green')" style="width:100%;padding:0.55rem;margin-top:0.25rem">✍ Guardar y generar PDF</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const TITLES = {
+  dashboard:['Dashboard','Resumen de tu actividad — Mercado Público Chile'],
+  busqueda:['Búsqueda','21 oportunidades disponibles según tu configuración'],
+  detalle:['Detalle licitación','ID: 2494-32-LP26 · Construcción Señalética Coyhaique'],
+  seguimiento:['Seguimiento','Postulaciones activas en gestión'],
+  cierres:['Próximos cierres','Ordenados por urgencia'],
+  alertas:['Historial alertas','Registro de mensajes WhatsApp enviados'],
+  presupuestos:['Presupuestos','Genera cotizaciones automáticas en PDF'],
+  decjurada:['Declaración Jurada','Complétala una vez para todas las postulaciones'],
+  ia:['Analizar bases IA','Powered by Claude — Anthropic API'],
+  competidores:['Análisis de competidores','Inteligencia de mercado público'],
+  scraper:['Monitor scraper','Frecuencia dinámica — simulando comportamiento humano'],
+  usuarios:['Usuarios','Gestión de accesos y roles'],
+  config:['Configuración','Palabras clave, alertas y conexiones']
+};
+
+function ir(sec, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const s = document.getElementById('s-' + sec);
+  if (s) s.classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (TITLES[sec]) {
+    document.getElementById('pageTitle').innerHTML =
+      `<div class="page-title">${TITLES[sec][0]}</div><div class="page-sub">${TITLES[sec][1]}</div>`;
+  }
+}
+
+const COLORS = {green:'var(--green)',blue:'var(--blue)',orange:'var(--orange)',red:'var(--red)'};
+function toast(msg, color='green') {
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<div class="toast-dot" style="background:${COLORS[color]||COLORS.green}"></div><div class="toast-msg">${msg}</div>`;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function selPtab(el) {
+  el.closest('.period-tabs').querySelectorAll('.ptab').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selPill(el, scope) {
+  const parent = el.closest('.lic-filters') || document.querySelector(scope);
+  if (parent) parent.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
